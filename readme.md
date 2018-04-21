@@ -18,7 +18,12 @@ The `loadCookieFile()` function accepts a Netscape cookie file.
 import requestAsBrowser, { loadCookieFile } from 'requestAsBrowser'
 
 const jar = await loadCookieFile('./cookies.txt')
-const data = await requestAsBrowser('http://www.site.com/', jar)
+const result = await requestAsBrowser('http://www.site.com/', jar)
+
+// or...
+import { postAsBrowser } from 'requestAsBrowser'
+// Form data is sent as application/x-www-form-urlencoded.
+const result = await postAsBrowser('http://www.site.com/', jar, { hello: 'world' })
 ```
 
 Your result will have `response` (e.g. `response.statusCode`) and the response in `body`.
