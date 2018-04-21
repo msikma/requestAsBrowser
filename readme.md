@@ -8,7 +8,8 @@ I got tired of copying this code around whenever I needed to make some screen sc
 so I decided to make it into its own package.
 
 The main difference with a regular `request()` call is that this adds some standard headers that make us
-look a little more like a real browser, since occasionally sites will refuse access to obvious scripts.
+look a little more [like a real browser](https://github.com/msikma/requestAsBrowser/blob/master/src/index.js#L10),
+since occasionally sites will refuse access to obvious scripts.
 
 ## Usage
 
