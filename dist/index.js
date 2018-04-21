@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.requestAsBrowser = exports.loadCookieFile = undefined;
+exports.postAsBrowser = exports.loadCookieFile = undefined;
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; /**
                                                                                                                                                                                                                                                                    * requestAsBrowser - Real browser UA wrapper for request() <https://github.com/msikma/requestAsBrowser>
@@ -53,23 +53,51 @@ var browserHeaders = {
 };
 
 /**
+ * Standard callback responder for requests.
+ */
+var reqCallback = function reqCallback(resolve, reject) {
+  return function (error, response, body) {
+    if (error) {
+      return reject(error);
+    }
+    return resolve({ response: response, body: body });
+  };
+};
+
+/**
+ * Same as requestAsBrowser, but does a POST request and includes form data.
+ * This sends a form upload using application/x-www-form-urlencoded.
+ */
+var postAsBrowser = exports.postAsBrowser = function postAsBrowser(url, cookieJar, form) {
+  var extraHeaders = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+  var gzip = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
+  return new Promise(function (resolve, reject) {
+    _request2.default.post({
+      url: url,
+      form: form,
+      headers: _extends({}, browserHeaders, extraHeaders),
+      jar: cookieJar,
+      gzip: gzip
+    }, reqCallback(resolve, reject));
+  });
+};
+
+/**
  * Safely requests and returns the HTML for a URL.
  *
  * This mimics a browser request to ensure we don't hit an anti-bot wall.
  */
-var requestAsBrowser = exports.requestAsBrowser = function requestAsBrowser(url, cookieJar) {
+var requestAsBrowser = function requestAsBrowser(url, cookieJar) {
   var extraHeaders = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var gzip = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
   return new Promise(function (resolve, reject) {
     (0, _request2.default)({
       url: url,
       headers: _extends({}, browserHeaders, extraHeaders),
       jar: cookieJar,
-      gzip: true
-    }, function (error, response, body) {
-      if (error) {
-        return reject(error);
-      }
-      return resolve({ response: response, body: body });
-    });
+      gzip: gzip
+    }, reqCallback(resolve, reject));
   });
 };
+
+exports.default = requestAsBrowser;
