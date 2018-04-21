@@ -72,7 +72,7 @@ export const postAsBrowser = (url, cookieJar, form, extraHeaders = {}, gzip = tr
  *
  * This mimics a browser request to ensure we don't hit an anti-bot wall.
  */
-export const requestAsBrowser = (url, cookieJar, extraHeaders = {}, gzip = true) => (
+const requestAsBrowser = (url, cookieJar, extraHeaders = {}, gzip = true) => (
   new Promise((resolve, reject) => {
     request({
       url,
@@ -82,3 +82,5 @@ export const requestAsBrowser = (url, cookieJar, extraHeaders = {}, gzip = true)
     }, reqCallback(resolve, reject))
   })
 )
+
+export default requestAsBrowser
