@@ -41,22 +41,44 @@ export const loadCookieFile = (cookieFile) => (
 )
 
 /**
+ * Standard callback responder for requests.
+ */
+const reqCallback = (resolve, reject) => (error, response, body) => {
+  if (error) {
+    return reject(error)
+  }
+  return resolve({ response, body })
+}
+
+/**
+ * Same as requestAsBrowser, but does a POST request and includes form data.
+ * This sends a form upload using application/x-www-form-urlencoded.
+ */
+export const postAsBrowser = (url, cookieJar, form, extraHeaders = {}, gzip = true) => (
+  new Promise((resolve, reject) => {
+    request.post({
+      url,
+      form,
+      headers: { ...browserHeaders, ...extraHeaders },
+      jar: cookieJar,
+      gzip
+    }, reqCallback(resolve, reject))
+  })
+
+)
+
+/**
  * Safely requests and returns the HTML for a URL.
  *
  * This mimics a browser request to ensure we don't hit an anti-bot wall.
  */
-export const requestAsBrowser = (url, cookieJar, extraHeaders = {}) => (
+export const requestAsBrowser = (url, cookieJar, extraHeaders = {}, gzip = true) => (
   new Promise((resolve, reject) => {
     request({
       url,
       headers: { ...browserHeaders, ...extraHeaders },
       jar: cookieJar,
-      gzip: true
-    }, (error, response, body) => {
-      if (error) {
-        return reject(error)
-      }
-      return resolve({ response, body })
-    })
+      gzip
+    }, reqCallback(resolve, reject))
   })
 )
