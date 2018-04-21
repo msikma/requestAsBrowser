@@ -12,13 +12,16 @@ look a little more like a real browser, since occasionally sites will refuse acc
 
 ## Usage
 
+The `loadCookieFile()` function accepts a Netscape cookie file.
+
 ```js
 import requestAsBrowser, { loadCookieFile } from 'requestAsBrowser'
 
 const jar = await loadCookieFile('./cookies.txt')
 const data = await requestAsBrowser('http://www.site.com/', jar)
-// data.response, data.body
 ```
+
+Your result will have `response` (e.g. `response.statusCode`) and the response in `body`.
 
 ## Copyright
 
