@@ -54,14 +54,15 @@ const reqCallback = (resolve, reject) => (error, response, body) => {
  * Same as requestAsBrowser, but does a POST request and includes form data.
  * This sends a form upload using application/x-www-form-urlencoded.
  */
-export const postAsBrowser = (url, cookieJar, form, extraHeaders = {}, gzip = true) => (
+export const postAsBrowser = (url, cookieJar, form, extraHeaders = {}, gzip = true, reqOverrides = {}) => (
   new Promise((resolve, reject) => {
     request.post({
       url,
       form,
       headers: { ...browserHeaders, ...extraHeaders },
       jar: cookieJar,
-      gzip
+      gzip,
+      ...reqOverrides
     }, reqCallback(resolve, reject))
   })
 
@@ -72,13 +73,14 @@ export const postAsBrowser = (url, cookieJar, form, extraHeaders = {}, gzip = tr
  *
  * This mimics a browser request to ensure we don't hit an anti-bot wall.
  */
-const requestAsBrowser = (url, cookieJar, extraHeaders = {}, gzip = true) => (
+const requestAsBrowser = (url, cookieJar, extraHeaders = {}, gzip = true, reqOverrides = {}) => (
   new Promise((resolve, reject) => {
     request({
       url,
       headers: { ...browserHeaders, ...extraHeaders },
       jar: cookieJar,
-      gzip
+      gzip,
+      ...reqOverrides
     }, reqCallback(resolve, reject))
   })
 )
