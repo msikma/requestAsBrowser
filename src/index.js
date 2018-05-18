@@ -3,6 +3,7 @@
  * Copyright © 2018, Michiel Sikma
  */
 
+import fs from 'fs'
 import request from 'request'
 import FileCookieStore from 'file-cookie-store'
 
@@ -82,6 +83,24 @@ const requestAsBrowser = (url, cookieJar, extraHeaders = {}, gzip = true, reqOve
       gzip,
       ...reqOverrides
     }, reqCallback(resolve, reject))
+  })
+)
+
+/**
+ * Starts downloading a file to a path, and returns a promise that resolves
+ * after the file has been fully saved. A pipe is used to write the file,
+ * meaning that the file will be gradually filled with data, and on premature exit
+ * the file will have partial data.
+ */
+export const downloadFileAsBrowser = (url, name, cookieJar, extraHeaders = {}, gzip = true, reqOverrides = {}) => (
+  new Promise((resolve, reject) => {
+    request({
+      url,
+      headers: { ...browserHeaders, ...extraHeaders },
+      jar: cookieJar,
+      gzip,
+      ...reqOverrides
+    }, reqCallback(resolve, reject)).pipe(fs.createWriteStream(name))
   })
 )
 
