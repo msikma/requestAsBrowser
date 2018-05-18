@@ -3,12 +3,16 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.postAsBrowser = exports.loadCookieFile = undefined;
+exports.downloadFileAsBrowser = exports.postAsBrowser = exports.loadCookieFile = undefined;
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; /**
                                                                                                                                                                                                                                                                    * requestAsBrowser - Real browser UA wrapper for request() <https://github.com/msikma/requestAsBrowser>
                                                                                                                                                                                                                                                                    * Copyright © 2018, Michiel Sikma
                                                                                                                                                                                                                                                                    */
+
+var _fs = require('fs');
+
+var _fs2 = _interopRequireDefault(_fs);
 
 var _request = require('request');
 
@@ -71,14 +75,15 @@ var reqCallback = function reqCallback(resolve, reject) {
 var postAsBrowser = exports.postAsBrowser = function postAsBrowser(url, cookieJar, form) {
   var extraHeaders = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
   var gzip = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
+  var reqOverrides = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
   return new Promise(function (resolve, reject) {
-    _request2.default.post({
+    _request2.default.post(_extends({
       url: url,
       form: form,
       headers: _extends({}, browserHeaders, extraHeaders),
       jar: cookieJar,
       gzip: gzip
-    }, reqCallback(resolve, reject));
+    }, reqOverrides), reqCallback(resolve, reject));
   });
 };
 
@@ -90,13 +95,34 @@ var postAsBrowser = exports.postAsBrowser = function postAsBrowser(url, cookieJa
 var requestAsBrowser = function requestAsBrowser(url, cookieJar) {
   var extraHeaders = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
   var gzip = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+  var reqOverrides = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
   return new Promise(function (resolve, reject) {
-    (0, _request2.default)({
+    (0, _request2.default)(_extends({
       url: url,
       headers: _extends({}, browserHeaders, extraHeaders),
       jar: cookieJar,
       gzip: gzip
-    }, reqCallback(resolve, reject));
+    }, reqOverrides), reqCallback(resolve, reject));
+  });
+};
+
+/**
+ * Starts downloading a file to a path, and returns a promise that resolves
+ * after the file has been fully saved. A pipe is used to write the file,
+ * meaning that the file will be gradually filled with data, and on premature exit
+ * the file will have partial data.
+ */
+var downloadFileAsBrowser = exports.downloadFileAsBrowser = function downloadFileAsBrowser(url, name, cookieJar) {
+  var extraHeaders = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+  var gzip = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
+  var reqOverrides = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
+  return new Promise(function (resolve, reject) {
+    (0, _request2.default)(_extends({
+      url: url,
+      headers: _extends({}, browserHeaders, extraHeaders),
+      jar: cookieJar,
+      gzip: gzip
+    }, reqOverrides), reqCallback(resolve, reject)).pipe(_fs2.default.createWriteStream(name));
   });
 };
 
