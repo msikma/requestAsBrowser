@@ -104,4 +104,7 @@ export const downloadFileAsBrowser = (url, name, cookieJar, extraHeaders = {}, g
   })
 )
 
+// Export request.cookie so we can make new cookies aside from loading a file
+export const requestCookie = request.cookie
+
 export default requestAsBrowser

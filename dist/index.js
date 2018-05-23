@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.downloadFileAsBrowser = exports.postAsBrowser = exports.loadCookieFile = undefined;
+exports.requestCookie = exports.downloadFileAsBrowser = exports.postAsBrowser = exports.loadCookieFile = undefined;
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; /**
                                                                                                                                                                                                                                                                    * requestAsBrowser - Real browser UA wrapper for request() <https://github.com/msikma/requestAsBrowser>
@@ -125,5 +125,8 @@ var downloadFileAsBrowser = exports.downloadFileAsBrowser = function downloadFil
     }, reqOverrides), reqCallback(resolve, reject)).pipe(_fs2.default.createWriteStream(name));
   });
 };
+
+// Export request.cookie so we can make new cookies aside from loading a file
+var requestCookie = exports.requestCookie = _request2.default.cookie;
 
 exports.default = requestAsBrowser;
