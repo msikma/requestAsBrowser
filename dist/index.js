@@ -139,33 +139,35 @@ var downloadFileAsBrowser = exports.downloadFileAsBrowser = function downloadFil
               r = _context.sent;
 
               resolve(_extends({}, r));
-              _context.next = 20;
+              _context.next = 21;
               break;
 
             case 8:
               _context.prev = 8;
               _context.t0 = _context['catch'](1);
-              _context.prev = 10;
-              _context.next = 13;
+
+              _fs2.default.unlinkSync(name);
+              _context.prev = 11;
+              _context.next = 14;
               return pipeFile(_extends({}, args, { url: mightBeURL }), mightBeName);
 
-            case 13:
+            case 14:
               rTwo = _context.sent;
               return _context.abrupt('return', resolve(_extends({}, rTwo)));
 
-            case 17:
-              _context.prev = 17;
-              _context.t1 = _context['catch'](10);
-
-            case 19:
-              return _context.abrupt('return', reject(_context.t0));
+            case 18:
+              _context.prev = 18;
+              _context.t1 = _context['catch'](11);
 
             case 20:
+              return _context.abrupt('return', reject(_context.t0));
+
+            case 21:
             case 'end':
               return _context.stop();
           }
         }
-      }, _callee, undefined, [[1, 8], [10, 17]]);
+      }, _callee, undefined, [[1, 8], [11, 18]]);
     }));
 
     return function (_x12, _x13) {

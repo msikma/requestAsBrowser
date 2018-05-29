@@ -103,6 +103,7 @@ export const downloadFileAsBrowser = (url, name, cookieJar, extraHeaders = {}, g
       resolve({ ...r })
     }
     catch (err) {
+      fs.unlinkSync(name)
       try {
         const rTwo = await pipeFile({ ...args, url: mightBeURL }, mightBeName)
         return resolve({ ...rTwo })

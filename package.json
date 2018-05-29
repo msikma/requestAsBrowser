@@ -1,7 +1,7 @@
 {
   "name": "requestAsBrowser",
   "description": "Thin wrapper around request() for making browser-like HTTP calls",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "homepage": "https://github.com/msikma/requestAsBrowser",
   "main": "dist/index.js",
   "scripts": {
