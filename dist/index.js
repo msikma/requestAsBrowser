@@ -24,8 +24,6 @@ var _fileCookieStore2 = _interopRequireDefault(_fileCookieStore);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 // These headers are sent with each request to make us look more like a real browser.
@@ -127,64 +125,47 @@ var downloadFileAsBrowser = exports.downloadFileAsBrowser = function downloadFil
   var mightBeName = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : null;
   return new Promise(function () {
     var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(resolve, reject) {
-      var args, main, secondary;
+      var args, r, rTwo;
       return regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
               args = _extends({ headers: _extends({}, browserHeaders, extraHeaders), jar: cookieJar, gzip: gzip }, reqOverrides);
-              _context.next = 3;
-              return requestAsBrowser.apply(undefined, [url].concat(_toConsumableArray(args)));
+              _context.prev = 1;
+              _context.next = 4;
+              return pipeFile(_extends({}, args, { url: url }), name);
 
-            case 3:
-              main = _context.sent;
+            case 4:
+              r = _context.sent;
 
-              if (!(main.response && main.response.statusCode === 200)) {
-                _context.next = 8;
-                break;
-              }
-
-              _context.next = 7;
-              return saveBinaryFile(main.body, name);
-
-            case 7:
-              return _context.abrupt('return', resolve({ response: main.response, body: main.body }));
+              resolve(_extends({}, r));
+              _context.next = 20;
+              break;
 
             case 8:
-              if (!(main.response && main.response.statusCode === 404 && mightBeURL)) {
-                _context.next = 17;
-                break;
-              }
+              _context.prev = 8;
+              _context.t0 = _context['catch'](1);
+              _context.prev = 10;
+              _context.next = 13;
+              return pipeFile(_extends({}, args, { url: mightBeURL }), mightBeName);
 
-              _context.next = 11;
-              return requestAsBrowser.apply(undefined, [mightBeURL].concat(_toConsumableArray(args)));
-
-            case 11:
-              secondary = _context.sent;
-
-              if (!(secondary.response && secondary.response.statusCode === 200)) {
-                _context.next = 16;
-                break;
-              }
-
-              _context.next = 15;
-              return saveBinaryFile(main.body, mightBeName);
-
-            case 15:
-              return _context.abrupt('return', resolve({ response: secondary.response, body: secondary.body }));
-
-            case 16:
-              return _context.abrupt('return', reject(secondary));
+            case 13:
+              rTwo = _context.sent;
+              return _context.abrupt('return', resolve(_extends({}, rTwo)));
 
             case 17:
-              return _context.abrupt('return', reject(main));
+              _context.prev = 17;
+              _context.t1 = _context['catch'](10);
 
-            case 18:
+            case 19:
+              return _context.abrupt('return', reject(_context.t0));
+
+            case 20:
             case 'end':
               return _context.stop();
           }
         }
-      }, _callee, undefined);
+      }, _callee, undefined, [[1, 8], [10, 17]]);
     }));
 
     return function (_x12, _x13) {
@@ -194,11 +175,29 @@ var downloadFileAsBrowser = exports.downloadFileAsBrowser = function downloadFil
 };
 
 /**
+ * Pipe a download to a file on the local disk.
+ */
+var pipeFile = function pipeFile(args, name) {
+  return new Promise(function (resolve, reject) {
+    (0, _request2.default)(args, reqCallback(resolve, reject)).on('response', function (response) {
+      if (response.statusCode === 404) {
+        return reject();
+      }
+    }).on('error', function (err) {
+      reject(err);
+    }).pipe(_fs2.default.createWriteStream(name));
+  });
+};
+
+/**
  * Saves binary data to a destination file.
  */
 var saveBinaryFile = function saveBinaryFile(data, dest) {
   return new Promise(function (resolve, reject) {
-    _fs2.default.writeFile(dest, data, { encoding: null });
+    _fs2.default.writeFile(dest, data, { encoding: 'binary' }, function (err) {
+      if (err) return reject();
+      return resolve();
+    });
   });
 };
 

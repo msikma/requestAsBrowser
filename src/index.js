@@ -98,23 +98,37 @@ const requestAsBrowser = (url, cookieJar, extraHeaders = {}, gzip = true, reqOve
 export const downloadFileAsBrowser = (url, name, cookieJar, extraHeaders = {}, gzip = true, reqOverrides = {}, mightBeURL = null, mightBeName = null) => (
   new Promise(async (resolve, reject) => {
     const args = { headers: { ...browserHeaders, ...extraHeaders }, jar: cookieJar, gzip, ...reqOverrides }
-    const main = await requestAsBrowser(url, ...args)
-    if (main.response && main.response.statusCode === 200) {
-      await saveBinaryFile(main.body, name)
-      return resolve({ response: main.response, body: main.body })
+    try {
+      const r = await pipeFile({ ...args, url }, name)
+      resolve({ ...r })
     }
-
-    // If the main URL is a 404, and we have 'mightBe' values, try a secondary URL.
-    if (main.response && main.response.statusCode === 404 && mightBeURL) {
-      const secondary = await requestAsBrowser(mightBeURL, ...args)
-      if (secondary.response && secondary.response.statusCode === 200) {
-        await saveBinaryFile(main.body, mightBeName)
-        return resolve({ response: secondary.response, body: secondary.body })
+    catch (err) {
+      try {
+        const rTwo = await pipeFile({ ...args, url: mightBeURL }, mightBeName)
+        return resolve({ ...rTwo })
       }
-      return reject(secondary)
+      catch (errTwo) {
+      }
+      return reject(err)
     }
+  })
+)
 
-    return reject(main)
+/**
+ * Pipe a download to a file on the local disk.
+ */
+const pipeFile = (args, name) => (
+  new Promise((resolve, reject) => {
+    request(args, reqCallback(resolve, reject))
+      .on('response', (response) => {
+        if (response.statusCode === 404) {
+          return reject()
+        }
+      })
+      .on('error', (err) => {
+        reject(err)
+      })
+      .pipe(fs.createWriteStream(name))
   })
 )
 
@@ -123,7 +137,10 @@ export const downloadFileAsBrowser = (url, name, cookieJar, extraHeaders = {}, g
  */
 const saveBinaryFile = (data, dest) => (
   new Promise((resolve, reject) => {
-    fs.writeFile(dest, data, { encoding: null })
+    fs.writeFile(dest, data, { encoding: 'binary' }, (err) => {
+      if (err) return reject()
+      return resolve()
+    })
   })
 )
 
