@@ -91,16 +91,39 @@ const requestAsBrowser = (url, cookieJar, extraHeaders = {}, gzip = true, reqOve
  * after the file has been fully saved. A pipe is used to write the file,
  * meaning that the file will be gradually filled with data, and on premature exit
  * the file will have partial data.
+ *
+ * mightBe: Special hack for Pixiv: a file might be a jpg, or it might be a png.
+ * This is the least expensive way to check when downloading a lot of files.
  */
-export const downloadFileAsBrowser = (url, name, cookieJar, extraHeaders = {}, gzip = true, reqOverrides = {}) => (
+export const downloadFileAsBrowser = (url, name, cookieJar, extraHeaders = {}, gzip = true, reqOverrides = {}, mightBeURL = null, mightBeName = null) => (
+  new Promise(async (resolve, reject) => {
+    const args = { headers: { ...browserHeaders, ...extraHeaders }, jar: cookieJar, gzip, ...reqOverrides }
+    const main = await requestAsBrowser(url, ...args)
+    if (main.response && main.response.statusCode === 200) {
+      await saveBinaryFile(main.body, name)
+      return resolve({ response: main.response, body: main.body })
+    }
+
+    // If the main URL is a 404, and we have 'mightBe' values, try a secondary URL.
+    if (main.response && main.response.statusCode === 404 && mightBeURL) {
+      const secondary = await requestAsBrowser(mightBeURL, ...args)
+      if (secondary.response && secondary.response.statusCode === 200) {
+        await saveBinaryFile(main.body, mightBeName)
+        return resolve({ response: secondary.response, body: secondary.body })
+      }
+      return reject(secondary)
+    }
+
+    return reject(main)
+  })
+)
+
+/**
+ * Saves binary data to a destination file.
+ */
+const saveBinaryFile = (data, dest) => (
   new Promise((resolve, reject) => {
-    request({
-      url,
-      headers: { ...browserHeaders, ...extraHeaders },
-      jar: cookieJar,
-      gzip,
-      ...reqOverrides
-    }, reqCallback(resolve, reject)).pipe(fs.createWriteStream(name))
+    fs.writeFile(dest, data, { encoding: null })
   })
 )
 
